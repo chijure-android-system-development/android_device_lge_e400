@@ -18,7 +18,7 @@
 |------------------------------|-----------|----------------------------------------|
 | Resolución correcta          | ✅        | 240x320 sin distorsión                 |
 | Brillo ajustable             | ✅        | Funciona con barra de ajustes          |
-| Aceleración gráfica HW       | ❌        | Gráficos se ven lentos y con glitches  |
+| Aceleración gráfica HW       | ✅        | Adreno 200 en uso (kgsl-3d0 0666 por init) y `debug.composition.type=mdp` |
 | Táctil funcional             | ✅        | Detecta toques y multitouch            |
 | Renderizado de íconos/texto  | ✅        | Sin artefactos visuales                |
 
@@ -29,7 +29,7 @@
 | Reproducción de audio  | ✅        | MP3 y tonos del sistema OK       |
 | Volumen ajustable      | ✅        | Se ajusta desde botones físicos  |
 | Altavoz externo        | ✅        | Audio fuerte y claro             |
-| Auriculares            | 🟡        | No probado                       |
+| Auriculares            | ✅        | Música por el jack; se detectan también si ya están conectados al arrancar |
 | Grabadora de voz       | ✅        | Verificado por el usuario        |
 | Micrófono              | ✅        | Funciona en llamadas             |
 
@@ -39,8 +39,10 @@
 |-----------------------|-----------|---------------------------------------|
 | Wi-Fi                 | ✅        | Se conecta y navega sin problemas     |
 | Bluetooth             | ✅        | Verificado a mano (kernel del stock)  |
-| Datos móviles         | ✅        | Detecta señal y navega                |
-| APN detectado         | ✅        | Automático con chip Claro             |
+| Datos móviles         | 🟡        | Sin validar: ver fila de SIM          |
+| APN detectado         | 🟡        | Sin validar (necesita registro en red)|
+| SIM                   | 🟡        | SIM Movistar: READY/LOADED, registro denegado (¿SIM suspendida?); SIM de otro operador: bloqueo de red del equipo (e0_mov_la) |
+| Radio FM              | ❌        | Sintoniza, no suena, y la app se cuelga al apagar (driver del kernel stock); FM y fminit no se instalan |
 | GPS                   | 🟡        | Detecta satélites pero no fija aún    |
 
 ## 📷 Cámara
