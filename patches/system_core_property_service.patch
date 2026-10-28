@@ -1,0 +1,12 @@
+diff --git a/init/property_service.c b/init/property_service.c
+index b6c955e05..ec0b4724d 100644
+--- a/init/property_service.c
++++ b/init/property_service.c
+@@ -84,6 +84,7 @@ struct {
+     { "persist.sys.",     AID_SYSTEM,   0 },
+     { "persist.service.", AID_SYSTEM,   0 },
+     { "persist.service.", AID_RADIO,    0 },
++    { "persist.service.bt.", AID_BLUETOOTH, 0 },
+     { "persist.security.",AID_SYSTEM,   0 },
+     { "wimax.",           AID_SYSTEM,   1000 },
+     { "net.pdp0",         AID_RADIO,    0 },

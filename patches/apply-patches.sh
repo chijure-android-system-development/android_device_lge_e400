@@ -41,6 +41,11 @@ apply frameworks/base frameworks_base_surfaceflinger_fb_stride.patch
 #   y subirla antes de cada escaneo. Mismo parche que usa el Y220.
 apply frameworks/base frameworks_base_wifi_statetracker.patch
 
+# system/core — init: permitir persist.service.bt.* al usuario bluetooth, como el init
+#   del stock. hci_qcomm_init guarda ahí su dirección; sin la regla se negaba y el
+#   Bluetooth cambiaba de dirección (y perdía los emparejamientos) en cada arranque.
+apply system/core system_core_property_service.patch
+
 # external/wpa_supplicant_8 — stub wpa_ctrl_cleanup() (lo llama el wifi.c de GB)
 #   y SIOCSIWFREQ no fatal (el driver Libra devuelve EOPNOTSUPP).
 apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
