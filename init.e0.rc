@@ -93,7 +93,7 @@ on post-fs
     start rmt_storage
 # msm specific files that need to be created on /data
 
-on post-fs-data
+on post-fs
     mkdir /data/radio 0770 radio radio
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/media 0775 media_rw media_rw
