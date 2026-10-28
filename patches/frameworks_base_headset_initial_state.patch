@@ -1,0 +1,15 @@
+diff --git a/services/java/com/android/server/HeadsetObserver.java b/services/java/com/android/server/HeadsetObserver.java
+index 40963fdf04a..d95596aab4a 100644
+--- a/services/java/com/android/server/HeadsetObserver.java
++++ b/services/java/com/android/server/HeadsetObserver.java
+@@ -38,8 +38,8 @@ class HeadsetObserver extends UEventObserver {
+     private static final boolean LOG = true;
+ 
+     private static final String HEADSET_UEVENT_MATCH = "DEVPATH=/devices/virtual/switch/h2w";
+-    private static final String HEADSET_STATE_PATH = "/sys/class/switch/h2w/state";
+-    private static final String HEADSET_NAME_PATH = "/sys/class/switch/h2w/name";
++    private static final String HEADSET_STATE_PATH = "/sys/class/switch/h2w_headset/state";
++    private static final String HEADSET_NAME_PATH = "/sys/class/switch/h2w_headset/name";
+ 
+     private static final int BIT_HEADSET = (1 << 0);
+     private static final int BIT_HEADSET_NO_MIC = (1 << 1);

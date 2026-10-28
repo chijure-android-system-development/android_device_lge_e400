@@ -50,6 +50,11 @@ apply system/core system_core_property_service.patch
 #   y SIOCSIWFREQ no fatal (el driver Libra devuelve EOPNOTSUPP).
 apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
 
+# frameworks/base — HeadsetObserver: el driver publica el jack en h2w_headset; el estado
+#   inicial se leia de /sys/class/switch/h2w (siempre 0) y unos audifonos ya conectados al
+#   arrancar no se detectaban hasta reenchufarlos.
+apply frameworks/base frameworks_base_headset_initial_state.patch
+
 # frameworks/base — FM: JNI Qualcomm tavarua (BOARD_FM_DEVICE=qcom) + stack Java
 #   android.hardware.fmradio (mismo que el Y210; el chip es el mismo 0x4020205).
 apply frameworks/base frameworks_base_fm.patch

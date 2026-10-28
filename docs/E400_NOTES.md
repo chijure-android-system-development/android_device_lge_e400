@@ -210,5 +210,11 @@ Estado: la radio sintoniza, el audio aun no suena.
 - `debug.composition.type=mdp` en system.prop NO es inerte: sin ella el gralloc del stock
   reserva todo por ashmem con MAP_LOCKED (EAGAIN, memlock 64 KB) y solo se dibuja la
   status bar. El build.prop del equipo no la habia perdido hasta regenerarlo.
+- HeadsetObserver leia el estado inicial de /sys/class/switch/h2w (siempre 0) y no de
+  h2w_headset: audifonos ya conectados al arrancar no se detectaban (parche
+  frameworks_base_headset_initial_state.patch). Ademas la app FM deja
+  FORCE_SPEAKER para MEDIA si se cuelga: la musica sale por el altavoz hasta reiniciar
+  mediaserver (`dumpsys media.audio_policy` -> "Force use for media").
+- libaudio no podia abrir /dev/i2c-1 (root 0600): init.e0.rc ahora lo deja system:audio 0660.
 - Pendiente: la app FM se cuelga en el kernel (`xfr_intf_own`, estado D) al apagar la
   radio; el audio no se ha oido aun (ruta FM con pines/codec sin verificar).

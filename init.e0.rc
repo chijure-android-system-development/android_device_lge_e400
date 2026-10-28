@@ -14,6 +14,9 @@ on boot
     # /dev/radio0 stays root, only fminit opens it and hands the fd to the app
     chown system audio /dev/msm_fm
     chmod 0660 /dev/msm_fm
+    # BTFMPinSwitching (libaudio, as in stock) writes the Marimba over /dev/i2c-1
+    chown system audio /dev/i2c-1
+    chmod 0660 /dev/i2c-1
 
     #port-bridge
     chmod 0660 /dev/smd0
