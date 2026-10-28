@@ -77,6 +77,8 @@ lib/libOmxAmrDec.so
 lib/libOmxAdpcmDec.so
 lib/libOmxAacEnc.so
 lib/libOmxAacDec.so
+lib/libOmxCore.so
+lib/libmm-omxcore.so
 bin/hciattach
 bin/hci_qcomm_init
 lib/libaudioeq.so
