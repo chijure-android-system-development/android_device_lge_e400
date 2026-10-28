@@ -1,33 +1,15 @@
-diff --git a/libs/camera/CameraParameters.cpp b/libs/camera/CameraParameters.cpp
-index 703f2a9c5fa..be84826627e 100644
---- a/libs/camera/CameraParameters.cpp
-+++ b/libs/camera/CameraParameters.cpp
-@@ -261,6 +261,28 @@ const char CameraParameters::KEY_MANUAL_FOCUS[] = "manual-focus";
- const char CameraParameters::KEY_LUMA_ADAPTION[] = "luma-adaption";
- const char CameraParameters::KEY_VT_MODE[] = "vt-mode";
+diff --git a/libs/camera/Android.mk b/libs/camera/Android.mk
+index 65211f804da..2a906476ff0 100644
+--- a/libs/camera/Android.mk
++++ b/libs/camera/Android.mk
+@@ -8,6 +8,10 @@ LOCAL_SRC_FILES:= \
+ 	ICameraClient.cpp \
+ 	ICameraService.cpp
  
-+//LGE E400: the stock libcamera.so imports these from libcamera_client
-+const char CameraParameters::KEY_DENOISE[] = "denoise";
-+const char CameraParameters::KEY_SUPPORTED_DENOISE[] = "denoise-values";
-+const char CameraParameters::DENOISE_OFF[] = "denoise-off";
-+const char CameraParameters::DENOISE_ON[] = "denoise-on";
-+const char CameraParameters::KEY_MEMORY_COLOR_ENHANCEMENT[] = "mce";
-+const char CameraParameters::KEY_SUPPORTED_MEM_COLOR_ENHANCE_MODES[] = "mce-values";
-+const char CameraParameters::MCE_ENABLE[] = "enable";
-+const char CameraParameters::MCE_DISABLE[] = "disable";
-+const char CameraParameters::KEY_REDEYE_REDUCTION[] = "redeye-reduction";
-+const char CameraParameters::KEY_SUPPORTED_REDEYE_REDUCTION[] = "redeye-reduction-values";
-+const char CameraParameters::REDEYE_REDUCTION_ENABLE[] = "enable";
-+const char CameraParameters::REDEYE_REDUCTION_DISABLE[] = "disable";
-+const char CameraParameters::KEY_VIDEO_HIGH_FRAME_RATE[] = "video-hfr";
-+const char CameraParameters::KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES[] = "video-hfr-values";
-+const char CameraParameters::KEY_SUPPORTED_HFR_SIZES[] = "hfr-size-values";
-+const char CameraParameters::VIDEO_HFR_OFF[] = "off";
-+const char CameraParameters::VIDEO_HFR_2X[] = "60";
-+const char CameraParameters::VIDEO_HFR_3X[] = "90";
-+const char CameraParameters::VIDEO_HFR_4X[] = "120";
-+const char CameraParameters::PIXEL_FORMAT_YV12[] = "yv12";
++# Extra sources a device needs inside libcamera_client (e.g. symbols that its
++# proprietary camera HAL imports from here).
++LOCAL_SRC_FILES += $(BOARD_CAMERA_CLIENT_EXTRA_SRC)
 +
- #ifdef CAF_CAMERA_GB_REL
- static const char* portrait = "portrait";
- static const char* landscape = "landscape";
+ LOCAL_SHARED_LIBRARIES := \
+ 	libcutils \
+ 	libutils \

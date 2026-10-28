@@ -2,6 +2,8 @@
 
 # libcamera.so is a wrapper (libcamera/E400CameraWrapper.cpp) over the stock
 # LG HAL, installed as libcamera.e400.so; see the comments in the wrapper.
+# The stock HAL imports CameraParameters statics from libcamera_client.
+BOARD_CAMERA_CLIENT_EXTRA_SRC := ../../../../device/lge/e400/libcamera_compat/camera_params_compat.cpp
 
 COPYBIT_MSM7K := true
 
