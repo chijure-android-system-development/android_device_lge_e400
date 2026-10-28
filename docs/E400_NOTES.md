@@ -40,11 +40,16 @@ Viven en `patches/` y se aplican con `apply-patches.sh` (como el Y210):
 
 | Parche | Para qué |
 |---|---|
-| `frameworks_base_camera.patch` | 20 constantes de `CameraParameters` que importa el `libcamera.so` del stock desde `libcamera_client` |
-| `external_openssl_bn_const.patch` | `libcrypto` debe exportar `get_rfc3526_prime_1536` (enlace de `wpa_supplicant_8`) |
+| `frameworks_base_camera.patch` | gancho genérico `BOARD_CAMERA_CLIENT_EXTRA_SRC` en `libs/camera/Android.mk`; las 20 constantes de `CameraParameters` que importa el HAL del stock viven en `libcamera_compat/` |
+| `frameworks_base_surfaceflinger_fb_stride.patch` | capturas del framebuffer con el stride real (rayas al rotar) |
+| `frameworks_base_wifi_statetracker.patch` | no bajar `wlan0` al desconectar y subirla antes de escanear |
 | `external_wpa_supplicant_8_e400.patch` | stub `wpa_ctrl_cleanup()` + `SIOCSIWFREQ` no fatal (driver Libra) |
 | `packages_apps_FileManager_proguard.patch` | ProGuard de userdebug aborta por `android.support.v2` |
-| `vendor_cyanogen_e400_product.patch` + `vendor_cyanogen_cyanogen_e400.mk` | producto `cyanogen_e400` |
+| `vendor_cyanogen_cyanogen_e400.mk` | una línea que incluye `device/lge/e400/cyanogen_e400.mk`: `CM_BUILD` fuerza `vendor/cyanogen/products/cyanogen_<dev>.mk` |
+
+Lo que **ya no necesita parche** porque vive en el dispositivo: el producto
+(`cyanogen_e400.mk`) y `get_rfc3526_prime_1536` para `wpa_supplicant`
+(`wpa_supplicant_8_lib/bn_const_compat.c`).
 
 `vendor/lge/e400/e400-vendor-blobs.mk` (repo de blobs) necesita estas líneas:
 

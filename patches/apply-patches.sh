@@ -26,8 +26,9 @@ copy_new() {
     cp "$CM7_ROOT/$PATCHES_DIR/$src" "$CM7_ROOT/$dst"
 }
 
-# frameworks/base — cámara: CameraParameters (HFR/denoise/redeye/MCE/YV12) que
-#   importa el libcamera.so del stock (libcamera.e400.so) desde libcamera_client.
+# frameworks/base — gancho genérico BOARD_CAMERA_CLIENT_EXTRA_SRC en libs/camera:
+#   deja compilar dentro de libcamera_client las constantes de CameraParameters que
+#   importa el libcamera.so del stock (están en libcamera_compat/ del dispositivo).
 apply frameworks/base frameworks_base_camera.patch
 
 # frameworks/base — SurfaceFlinger: las capturas directas del framebuffer (animación
@@ -40,10 +41,6 @@ apply frameworks/base frameworks_base_surfaceflinger_fb_stride.patch
 #   y subirla antes de cada escaneo. Mismo parche que usa el Y220.
 apply frameworks/base frameworks_base_wifi_statetracker.patch
 
-# external/openssl — libcrypto debe exportar get_rfc3526_prime_1536 (bn_const.c)
-#   para enlazar wpa_supplicant_8 (WPA_SUPPLICANT_VERSION := VER_0_8_X).
-apply external/openssl external_openssl_bn_const.patch
-
 # external/wpa_supplicant_8 — stub wpa_ctrl_cleanup() (lo llama el wifi.c de GB)
 #   y SIOCSIWFREQ no fatal (el driver Libra devuelve EOPNOTSUPP).
 apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
@@ -51,8 +48,9 @@ apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
 # packages/apps/FileManager — ProGuard falla en userdebug por android.support.v2.
 apply packages/apps/FileManager packages_apps_FileManager_proguard.patch
 
-# vendor/cyanogen — producto cyanogen_e400 (lo usa `lunch cyanogen_e400-userdebug`).
-apply vendor/cyanogen vendor_cyanogen_e400_product.patch
+# vendor/cyanogen — CM_BUILD (build/core/product_config.mk) importa siempre
+#   vendor/cyanogen/products/cyanogen_<dispositivo>.mk; ahí solo va una línea que
+#   incluye el producto real, que vive en device/lge/e400/cyanogen_e400.mk.
 copy_new vendor_cyanogen_cyanogen_e400.mk vendor/cyanogen/products/cyanogen_e400.mk
 
 echo "OK"
