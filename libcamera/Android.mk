@@ -3,8 +3,7 @@ ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),e400)
 LOCAL_PATH := $(call my-dir)
 
 # libcamera.so is the wrapper; the stock LG HAL is installed as
-# libcamera.e400.so (see e400-vendor-blobs.mk). QualcommCameraHardware.cpp in
-# this directory is the old source HAL and is not built.
+# libcamera.e400.so (see e400-vendor-blobs.mk).
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libcamera
