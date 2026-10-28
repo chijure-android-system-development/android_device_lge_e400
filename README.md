@@ -109,3 +109,4 @@
 | ADB                           | ✅        | `adb shell` funciona               |
 | Root                         | ✅        | `su` da root sin errores           |
 | Montaje de particiones        | ✅        | /system, /data y /cache montados   |
+> Notas de bring-up, causas raíz y problemas abiertos: [docs/E400_NOTES.md](docs/E400_NOTES.md)
