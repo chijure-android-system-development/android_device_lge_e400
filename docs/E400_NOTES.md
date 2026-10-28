@@ -234,3 +234,15 @@ Estado: la radio sintoniza, el audio aun no suena.
   PERSOSUBSTATE_SIM_NETWORK`: el equipo (e0_mov_la, Movistar) esta bloqueado por red y
   pide codigo de desbloqueo.
 - `Unrecognized unsol response: 1037` sigue apareciendo (inofensivo).
+
+### Estado de la SIM (2026-10-28, pendiente de otra SIM Movistar)
+
+- SIM Claro en el equipo Movistar (`e0_mov_la`): bloqueo de red (`SUBSCRIPTION_PERSO /
+  SIM_NETWORK`); hace falta el codigo de desbloqueo de Movistar, igual que en el stock.
+- SIM Movistar del usuario (ICCID 8951061021719987081, red 71606): `READY` -> `LOADED`, IMSI
+  leido (el AID en iccIO/getIMSI funciona), pero `REGISTRATION_STATE {3}` (denegado) y
+  `GPRS {2}`, con senal CSQ 7 y seleccion automatica. Posiblemente la SIM esta suspendida o
+  sin activar en Movistar (el usuario sospecha que esta bloqueada).
+- Por hacer: probar con otra SIM Movistar activa; si tambien se deniega, hacer busqueda manual
+  de redes (Ajustes > Operadores de red), probarla en otro telefono y revisar IMEI/NV (libnv).
+- Sin validar aun: llamadas, SMS y datos (rmnet0/netmgrd/qmuxd).
