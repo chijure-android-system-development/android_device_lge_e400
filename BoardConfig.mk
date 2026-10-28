@@ -1,5 +1,8 @@
 # USE_CAMERA_STUB := true
 
+# libcamera.so is a wrapper (libcamera/E400CameraWrapper.cpp) over the stock
+# LG HAL, installed as libcamera.e400.so; see the comments in the wrapper.
+
 COPYBIT_MSM7K := true
 
 # inherit from the proprietary version

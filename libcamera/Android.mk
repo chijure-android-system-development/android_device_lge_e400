@@ -1,33 +1,24 @@
 ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),e400)
 
-# When zero we link against libmmcamera; when 1, we dlopen libmmcamera.
-DLOPEN_LIBMMCAMERA:=1
+LOCAL_PATH := $(call my-dir)
 
-LOCAL_PATH:= $(call my-dir)
-
+# libcamera.so is the wrapper; the stock LG HAL is installed as
+# libcamera.e400.so (see e400-vendor-blobs.mk). QualcommCameraHardware.cpp in
+# this directory is the old source HAL and is not built.
 include $(CLEAR_VARS)
+
+LOCAL_MODULE := libcamera
 LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SHARED_LIBRARIES := \
+    libcutils \
+    libutils \
+    libcamera_client \
+    libui \
+    libbinder \
+    libdl
+LOCAL_SRC_FILES := E400CameraWrapper.cpp
 
-LOCAL_SRC_FILES:= QualcommCameraHardware.cpp
-
-LOCAL_CFLAGS:= -DDLOPEN_LIBMMCAMERA=$(DLOPEN_LIBMMCAMERA)
-
-LOCAL_CFLAGS+= -DNUM_PREVIEW_BUFFERS=4 -D_ANDROID_
-
-LOCAL_C_INCLUDES+= \
-    $(TARGET_OUT_HEADERS)/mm-camera \
-    $(TARGET_OUT_HEADERS)/mm-still/jpeg \
-
-LOCAL_SHARED_LIBRARIES:= libutils libui libcamera_client liblog libcutils
-
-LOCAL_SHARED_LIBRARIES+= libbinder
-ifneq ($(DLOPEN_LIBMMCAMERA),1)
-LOCAL_SHARED_LIBRARIES+= liboemcamera
-else
-LOCAL_SHARED_LIBRARIES+= libdl
-endif
-
-LOCAL_MODULE:= libcamera
 include $(BUILD_SHARED_LIBRARY)
 
 endif
