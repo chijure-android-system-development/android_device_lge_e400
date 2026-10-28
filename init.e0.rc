@@ -4,6 +4,12 @@ on boot-pause
     exec /sbin/chargerlogo
 
 on boot
+    # ueventd reads /ueventd.<first word of cpuinfo Hardware>.rc, which is
+    # ueventd.lge.rc here, so ueventd.e0.rc is never loaded and kgsl-3d0 stays
+    # 0600 root: SurfaceFlinger cannot open the Adreno and renders in software.
+    # The stock ueventd.rc makes it 0666.
+    chmod 0666 /dev/kgsl-3d0
+
     #port-bridge
     chmod 0660 /dev/smd0
     chown system system /dev/smd0
