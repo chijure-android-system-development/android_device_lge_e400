@@ -35,6 +35,11 @@ apply frameworks/base frameworks_base_camera.patch
 #   real del msm_fb es 512 B (256 px) y salían cuadros con rayas horizontales.
 apply frameworks/base frameworks_base_surfaceflinger_fb_stride.patch
 
+# frameworks/base — WifiStateTracker: no bajar wlan0 al pasar a DISCONNECTED (los
+#   escaneos siguientes se quedaban con la interfaz abajo y Ajustes no listaba redes)
+#   y subirla antes de cada escaneo. Mismo parche que usa el Y220.
+apply frameworks/base frameworks_base_wifi_statetracker.patch
+
 # external/openssl — libcrypto debe exportar get_rfc3526_prime_1536 (bn_const.c)
 #   para enlazar wpa_supplicant_8 (WPA_SUPPLICANT_VERSION := VER_0_8_X).
 apply external/openssl external_openssl_bn_const.patch
