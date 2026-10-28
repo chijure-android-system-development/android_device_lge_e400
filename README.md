@@ -30,7 +30,7 @@
 | Volumen ajustable      | ✅        | Se ajusta desde botones físicos  |
 | Altavoz externo        | ✅        | Audio fuerte y claro             |
 | Auriculares            | 🟡        | No probado                       |
-| Grabadora de voz       | ❌        | Funcionando                      |
+| Grabadora de voz       | ✅        | Verificado por el usuario        |
 | Micrófono              | ✅        | Funciona en llamadas             |
 
 ## 📶 Conectividad
