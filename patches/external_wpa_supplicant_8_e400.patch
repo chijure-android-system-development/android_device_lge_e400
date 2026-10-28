@@ -1,0 +1,36 @@
+diff --git a/src/common/wpa_ctrl.c b/src/common/wpa_ctrl.c
+index 2e3d49a..5af2f1a 100644
+--- a/src/common/wpa_ctrl.c
++++ b/src/common/wpa_ctrl.c
+@@ -175,6 +175,14 @@ void wpa_ctrl_close(struct wpa_ctrl *ctrl)
+ 	os_free(ctrl);
+ }
+ 
++#ifdef ANDROID
++/* Gingerbread libhardware_legacy wifi.c still calls this; wpa_ctrl_close()
++ * already unlinks the local socket in this version. */
++void wpa_ctrl_cleanup(void)
++{
++}
++#endif /* ANDROID */
++
+ #endif /* CONFIG_CTRL_IFACE_UNIX */
+ 
+ 
+diff --git a/src/drivers/driver_wext.c b/src/drivers/driver_wext.c
+index 001716e..1208505 100644
+--- a/src/drivers/driver_wext.c
++++ b/src/drivers/driver_wext.c
+@@ -2149,8 +2149,10 @@ int wpa_driver_wext_associate(void *priv,
+ 	if (wpa_driver_wext_set_auth_param(drv, IW_AUTH_MFP, value) < 0)
+ 		ret = -1;
+ #endif /* CONFIG_IEEE80211W */
+-	if (params->freq && wpa_driver_wext_set_freq(drv, params->freq) < 0)
+-		ret = -1;
++	/* Libra (stock WEXT driver) returns EOPNOTSUPP for SIOCSIWFREQ; the
++	 * BSSID/ESSID below are enough to associate, so do not fail on it. */
++	if (params->freq)
++		wpa_driver_wext_set_freq(drv, params->freq);
+ 	if (!drv->cfg80211 &&
+ 	    wpa_driver_wext_set_ssid(drv, params->ssid, params->ssid_len) < 0)
+ 		ret = -1;

@@ -1,0 +1,12 @@
+diff --git a/products/AndroidProducts.mk b/products/AndroidProducts.mk
+index d8725a9..166baae 100644
+--- a/products/AndroidProducts.mk
++++ b/products/AndroidProducts.mk
+@@ -13,6 +13,7 @@ PRODUCT_MAKEFILES := \
+     $(LOCAL_DIR)/cyanogen_crespo4g.mk \
+     $(LOCAL_DIR)/cyanogen_desirec.mk \
+     $(LOCAL_DIR)/cyanogen_dream_sapphire.mk \
++    $(LOCAL_DIR)/cyanogen_e400.mk \
+     $(LOCAL_DIR)/cyanogen_droid2.mk \
+     $(LOCAL_DIR)/cyanogen_droid2we.mk \
+     $(LOCAL_DIR)/cyanogen_encore.mk \
