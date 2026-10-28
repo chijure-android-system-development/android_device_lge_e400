@@ -62,6 +62,7 @@ vendor/lge/e400/proprietary/lib/libmm-omxcore.so:system/lib/libmm-omxcore.so
 | ROM lenta, CPU al 90 % | `qmiproxy` en bucle: no existía `/data/radio` porque `init.e0.rc` usaba `on post-fs-data`, que **el init de GB no dispara** | `on post-fs` (como el stock) |
 | Wi-Fi lista redes pero no asocia | el driver Libra devuelve `EOPNOTSUPP` a `SIOCSIWFREQ` y `wpa_supplicant_8` lo trataba como fatal | no fatal |
 | Cámara: `mediaserver` SIGSEGV | el HAL fuente exigía `mmcamera_camframe_callback`, que `liboemcamera.so` de LG no exporta | wrapper sobre el HAL del stock |
+| Rayas horizontales ~0,4 s al rotar con el sensor | `SurfaceFlinger::directCaptureScreenImplLocked` (y el efecto de apagado) copian el framebuffer suponiendo filas de `xres*bpp` = 480 B, pero el stride real del msm_fb es 512 B; la captura que usa la animación de rotación salía desplazada 32 B por fila | `patches/frameworks_base_surfaceflinger_fb_stride.patch`: usa `line_length` |
 | Pantalla verde ~0,3 s al abrir Cámara; `mdp_ppp: invalid image` | **el kernel del árbol** (`#2 Oct 8 2012`, "Manhattan") | kernel del stock V10c (`#1 Aug 8 2012`) |
 
 ### Cámara (sensor `hi351`)
@@ -102,20 +103,9 @@ apertura de Cámara dieron 0 cuadros verdes y 0 errores `mdp_ppp` (con el anteri
 
 ## 6. Problemas abiertos
 
-- **Rayas horizontales al rotar con el sensor** (reproducido con el kernel del stock):
-  cuadros de pantalla completa con el contenido mal interpretado (stride o formato
-  equivocado), ~0,4 s por rotación. No ocurre al cambiar de orientación por software
-  (Cámara <-> escritorio). Persisten sin `copybit` (97 de 320 cuadros contra 87),
-  así que no es el blob; tampoco es el bypass de composición
-  (`USE_COMPOSITION_BYPASS` no está definido). La estructura vertical se conserva y
-  filas/colores salen desplazados: parece un stride o formato de píxel equivocado en
-  una página del framebuffer. Sospechosos: rotación por software en `libagl`
-  (`egl.cpp`) o lo que añadió LG/Qualcomm al SurfaceFlinger del stock (su
-  `libpixelflinger` trae `rotate90CW_4x4_16v6`, el fuente de CM7 no).
-  **Las librerías de framework del stock no se pueden intercambiar** con las de CM7
-  (`libsurfaceflinger`, `libGLES_android`, `libpixelflinger`): el framework cae
-  (pantalla blanca y luego negra). Si pasa, recuperar con `adb root`, no con `su`.
-- Animación de rotación "fea" (sin diagnosticar con precisión).
+- ~~Rayas horizontales al rotar con el sensor~~: **resuelto** con el parche de stride de SurfaceFlinger (0 cuadros con rayas de 320 grabados, antes 87-97). Diagnóstico: `strace` de `system_server` mostró un `open` + `FBIOGET_VSCREENINFO` por cada rotación (la captura directa) y las rayas tenían la firma de un desplazamiento de 32 B por fila (suave por fila, discontinuo entre filas). `copybit` no tenía nada que ver.
+  **Las librerías de framework del stock no se pueden intercambiar** con las de CM7 (`libsurfaceflinger`, `libGLES_android`, `libpixelflinger`): el framework cae (pantalla blanca y luego negra). Si pasa, recuperar con `adb root`, no con `su`.
+- Animación de rotación "fea": probablemente era lo mismo que las rayas; pendiente confirmarlo con el usuario.
 - Video con poca luz: bajo fps y borroso (límite del sensor/HAL, sin verificar con luz).
 - Tras el cambio de kernel, verificado a mano: touch, audio y Bluetooth OK.
   Sin probar: vibración, sensores y modo avión.

@@ -1,0 +1,79 @@
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index f0812defd6b..af655c21d0b 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -1790,10 +1790,18 @@ status_t SurfaceFlinger::directRenderScreenToTextureLocked(DisplayID dpy,
+             break;
+     }
+ 
+-    offset = (vinfo.xoffset + vinfo.yoffset * vinfo.xres) * bytespp;
++    // Use the real framebuffer stride (see directCaptureScreenImplLocked).
++    struct fb_fix_screeninfo finfo;
++    if (ioctl(fb, FBIOGET_FSCREENINFO, &finfo) < 0) {
++        LOGE("Failed to get framebuffer fixed info");
++        close(fb);
++        return INVALID_OPERATION;
++    }
++    const size_t stride = finfo.line_length;
++    offset = vinfo.xoffset * bytespp + vinfo.yoffset * stride;
+     size = vinfo.xres * vinfo.yres * bytespp;
+ 
+-    mapsize = offset + size;
++    mapsize = offset + stride * vinfo.yres;
+     mapbase = mmap(0, mapsize, PROT_READ, MAP_PRIVATE, fb, 0);
+     close(fb);
+     if (mapbase == MAP_FAILED) {
+@@ -1825,10 +1833,8 @@ status_t SurfaceFlinger::directRenderScreenToTextureLocked(DisplayID dpy,
+     if (imageData) {
+         void *ptr = imageData;
+         uint32_t rowlen = hw_w * bytespp;
+-        offset = size;
+         for (uint32_t j = hw_h; j > 0; j--) {
+-            offset -= rowlen;
+-            memcpy(ptr, fbbase + offset, rowlen);
++            memcpy(ptr, (char const*)fbbase + (j - 1) * stride, rowlen);
+             ptr += rowlen;
+         }
+ 
+@@ -2339,8 +2345,17 @@ status_t SurfaceFlinger::directCaptureScreenImplLocked(DisplayID dpy,
+             break;
+     }
+ 
+-    size_t offset = (vinfo.xoffset + vinfo.yoffset * vinfo.xres) * bytespp;
+-    size_t size = vinfo.xres * vinfo.yres * bytespp;
++    // The framebuffer line may be longer than xres * bytespp (msm_fb pads it:
++    // 512 bytes for 240 px at 16bpp), so use the real stride, not xres.
++    struct fb_fix_screeninfo finfo;
++    if (ioctl(fb, FBIOGET_FSCREENINFO, &finfo) < 0) {
++        LOGE("Failed to get framebuffer fixed info");
++        close(fb);
++        return INVALID_OPERATION;
++    }
++    const size_t stride = finfo.line_length;
++    size_t offset = vinfo.xoffset * bytespp + vinfo.yoffset * stride;
++    size_t size = stride * vinfo.yres;
+     mapsize = offset + size;
+     mapbase = mmap(0, mapsize, PROT_READ, MAP_PRIVATE, fb, 0);
+     close(fb);
+@@ -2367,17 +2382,10 @@ status_t SurfaceFlinger::directCaptureScreenImplLocked(DisplayID dpy,
+     void* ptr = heapBase->getBase();
+ 
+     if (ptr) {
+-        if ((sw == hw_w) && (sh == hw_h)) {
+-            memcpy(ptr, fbbase, size);
+-        } else {
+-            uint32_t rowlen = hw_w * bytespp;
+-            uint32_t collen = sw * bytespp;
+-            size_t offset = 0;
+-            for (uint32_t j = 0; j < sh; j++) {
+-                memcpy(ptr, fbbase + offset, collen);
+-                ptr += collen;
+-                offset += rowlen;
+-            }
++        const uint32_t collen = sw * bytespp;
++        for (uint32_t j = 0; j < sh; j++) {
++            memcpy((char*)ptr + j * collen, (char const*)fbbase + j * stride,
++                    collen);
+         }
+         *heap = heapBase;
+         *w = sw;

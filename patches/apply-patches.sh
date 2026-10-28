@@ -30,6 +30,11 @@ copy_new() {
 #   importa el libcamera.so del stock (libcamera.e400.so) desde libcamera_client.
 apply frameworks/base frameworks_base_camera.patch
 
+# frameworks/base — SurfaceFlinger: las capturas directas del framebuffer (animación
+#   de rotación y apagado de pantalla) usaban xres como ancho de fila; el stride
+#   real del msm_fb es 512 B (256 px) y salían cuadros con rayas horizontales.
+apply frameworks/base frameworks_base_surfaceflinger_fb_stride.patch
+
 # external/openssl — libcrypto debe exportar get_rfc3526_prime_1536 (bn_const.c)
 #   para enlazar wpa_supplicant_8 (WPA_SUPPLICANT_VERSION := VER_0_8_X).
 apply external/openssl external_openssl_bn_const.patch
