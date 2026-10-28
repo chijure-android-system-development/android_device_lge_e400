@@ -58,7 +58,7 @@
 | Almacenamiento interno      | ✅        | Se puede explorar con file manager         |
 | SD externa                  | ✅        | Monta mmcblk1p1 correctamente              |
 | Montaje automático de SD    | ✅        | Detecta al insertar                        |
-| Almacenamiento por USB      | ❌        | No aparece en PC                           |
+| Almacenamiento por USB      | ✅        | Verificado por el usuario                  |
 | Escritura/lectura en /data  | ✅        | Pruebas OK                                 |
 
 ## 🔋 Batería y energía

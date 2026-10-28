@@ -117,6 +117,17 @@ apertura de Cámara dieron 0 cuadros verdes y 0 errores `mdp_ppp` (con el anteri
 - Tras el cambio de kernel, verificado a mano: touch, audio, Bluetooth, rotación y
   carga con el teléfono apagado OK. Sin probar: vibración, sensores y modo avión.
 
+### Hardware que declara el sistema
+
+`e400.mk` instala los mismos `/etc/permissions/*.xml` que el stock V10c (más
+`android.software.sip.voip`, propio de CM7). Antes declaraba autofoco y flash
+(`flash-autofocus`), cámara frontal, giroscopio y sensor de luz, que el teléfono **no
+tiene** (el HAL dice `AutoFocus is not supported` y `flash not supported`, solo hay la
+cámara 0, y los sensores son `bma250`, `bmm050` y `proximity`), y no declaraba cámara,
+acelerómetro, touch, ubicación ni Bluetooth. Declarar de más hace que las apps pidan
+funciones que no existen. Para comparar: `comm` de `ls /etc/permissions` del stock
+contra el de la imagen.
+
 ## 7. Cómo diagnosticar gráficos desde adb
 
 ```
