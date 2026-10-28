@@ -218,3 +218,19 @@ Estado: la radio sintoniza, el audio aun no suena.
 - libaudio no podia abrir /dev/i2c-1 (root 0600): init.e0.rc ahora lo deja system:audio 0660.
 - Pendiente: la app FM se cuelga en el kernel (`xfr_intf_own`, estado D) al apagar la
   radio; el audio no se ha oido aun (ruta FM con pines/codec sin verificar).
+
+## Telefonia / SIM (2026-10-28)
+
+- Los blobs del repo vendor eran de otro firmware: `libril-qc-1.so`, `libril-qc-qmi-1.so` y
+  `libnv.so` (mismo tamano, contenido distinto) no coincidian con el stock V10c. Con los del
+  stock el registro paso de 3 (denegado) a 2 (buscando). Las copias de antes estan en el
+  scratchpad de la sesion; el resto de los 94 blobs de vendor coincide con el stock.
+- `ro.telephony.ril_class=LGEQualcommUiccRIL` no existia: PhoneFactory solo conoce palabras
+  clave, asi que caia en el RIL generico. Ahora `ril/telephony/.../LGEQualcommUiccRIL.java`
+  (inyectada con FRAMEWORKS_BASE_SUBDIRS) extiende QualcommNoSimReadyRIL y lee el estado de
+  la tarjeta como el framework del stock: tres indices de suscripcion (gsm, cdma, ims) antes
+  de numApplications; envia el AID en iccIO/getIMSI/facility lock (igual que el Y210).
+- Con una SIM de otro operador el modem informa USIM en `SUBSCRIPTION_PERSO /
+  PERSOSUBSTATE_SIM_NETWORK`: el equipo (e0_mov_la, Movistar) esta bloqueado por red y
+  pide codigo de desbloqueo.
+- `Unrecognized unsol response: 1037` sigue apareciendo (inofensivo).

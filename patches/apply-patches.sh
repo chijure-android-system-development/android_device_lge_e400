@@ -55,6 +55,10 @@ apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
 #   arrancar no se detectaban hasta reenchufarlos.
 apply frameworks/base frameworks_base_headset_initial_state.patch
 
+# frameworks/base — PhoneFactory: rama para LGEQualcommUiccRIL (la clase vive en
+#   device/lge/e400/ril/, inyectada via FRAMEWORKS_BASE_SUBDIRS en e400.mk).
+apply frameworks/base frameworks_base_ril_class.patch
+
 # frameworks/base — FM: JNI Qualcomm tavarua (BOARD_FM_DEVICE=qcom) + stack Java
 #   android.hardware.fmradio (mismo que el Y210; el chip es el mismo 0x4020205).
 apply frameworks/base frameworks_base_fm.patch

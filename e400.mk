@@ -7,6 +7,9 @@ $(call inherit-product-if-exists, vendor/lge/e400/e400-vendor.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/lge/e400/overlay
 
+# LGEQualcommUiccRIL (ril/telephony) is compiled into the framework
+FRAMEWORKS_BASE_SUBDIRS += ../../$(LOCAL_PATH)/ril/
+
 PRODUCT_TAGS += dalvik.gc.type-precise
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapstartsize=5m \
