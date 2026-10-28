@@ -105,10 +105,20 @@ apertura de Cámara dieron 0 cuadros verdes y 0 errores `mdp_ppp` (con el anteri
 - **Rayas horizontales al rotar con el sensor** (reproducido con el kernel del stock):
   cuadros de pantalla completa con el contenido mal interpretado (stride o formato
   equivocado), ~0,4 s por rotación. No ocurre al cambiar de orientación por software
-  (Cámara <-> escritorio). Pendiente comprobar si desaparece sin `copybit`.
+  (Cámara <-> escritorio). Persisten sin `copybit` (97 de 320 cuadros contra 87),
+  así que no es el blob; tampoco es el bypass de composición
+  (`USE_COMPOSITION_BYPASS` no está definido). La estructura vertical se conserva y
+  filas/colores salen desplazados: parece un stride o formato de píxel equivocado en
+  una página del framebuffer. Sospechosos: rotación por software en `libagl`
+  (`egl.cpp`) o lo que añadió LG/Qualcomm al SurfaceFlinger del stock (su
+  `libpixelflinger` trae `rotate90CW_4x4_16v6`, el fuente de CM7 no).
+  **Las librerías de framework del stock no se pueden intercambiar** con las de CM7
+  (`libsurfaceflinger`, `libGLES_android`, `libpixelflinger`): el framework cae
+  (pantalla blanca y luego negra). Si pasa, recuperar con `adb root`, no con `su`.
 - Animación de rotación "fea" (sin diagnosticar con precisión).
 - Video con poca luz: bajo fps y borroso (límite del sensor/HAL, sin verificar con luz).
-- Sin probar tras el cambio de kernel: touch, audio, Bluetooth, vibración, sensores.
+- Tras el cambio de kernel, verificado a mano: touch, audio y Bluetooth OK.
+  Sin probar: vibración, sensores y modo avión.
 
 ## 7. Cómo diagnosticar gráficos desde adb
 
