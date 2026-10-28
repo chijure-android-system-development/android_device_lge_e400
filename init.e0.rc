@@ -1,7 +1,7 @@
 import init.e0.usb.rc
 
 on boot-pause
-    exec sbin/chargerlogo
+    exec /sbin/chargerlogo
 
 on boot
     #port-bridge

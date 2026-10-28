@@ -67,6 +67,7 @@ vendor/lge/e400/proprietary/lib/libmm-omxcore.so:system/lib/libmm-omxcore.so
 | ROM lenta, CPU al 90 % | `qmiproxy` en bucle: no existía `/data/radio` porque `init.e0.rc` usaba `on post-fs-data`, que **el init de GB no dispara** | `on post-fs` (como el stock) |
 | Wi-Fi lista redes pero no asocia | el driver Libra devuelve `EOPNOTSUPP` a `SIOCSIWFREQ` y `wpa_supplicant_8` lo trataba como fatal | no fatal |
 | Cámara: `mediaserver` SIGSEGV | el HAL fuente exigía `mmcamera_camframe_callback`, que `liboemcamera.so` de LG no exporta | wrapper sobre el HAL del stock |
+| Carga con el teléfono apagado no funciona | el `chargerlogo` del árbol (84 664 B, de otro kernel de LG: usa `/sys/module/pm2/parameters/hidden_resetting` y `/data/nv/FRStatus.txt`) **terminaba en segfault** (`exit=139`) al ejecutarlo; sus imágenes también eran de otro juego (fotogramas de pantalla completa en vez de recortes) | `chargerlogo` e imágenes del stock V10c (el binario del stock corre su bucle de animación sin fallar) y `exec /sbin/chargerlogo` como en el stock |
 | Wi-Fi no detecta ninguna red tras desconectar/olvidar una red (`wlan0` se cae cada ~5 s) | `WifiStateTracker` llama a `NetworkUtils.disableInterface()` al pasar a DISCONNECTED y nadie la vuelve a subir: los escaneos corren con la interfaz abajo (`wifi doCommand: ret=-1` cada 6 s). El log lo delata: `WifiStateTracker: Disabling interface` justo tras `Scan requested` | `patches/frameworks_base_wifi_statetracker.patch` (el mismo del Y220): no bajar la interfaz y subirla antes de escanear |
 | Rayas horizontales ~0,4 s al rotar con el sensor | `SurfaceFlinger::directCaptureScreenImplLocked` (y el efecto de apagado) copian el framebuffer suponiendo filas de `xres*bpp` = 480 B, pero el stride real del msm_fb es 512 B; la captura que usa la animación de rotación salía desplazada 32 B por fila | `patches/frameworks_base_surfaceflinger_fb_stride.patch`: usa `line_length` |
 | Pantalla verde ~0,3 s al abrir Cámara; `mdp_ppp: invalid image` | **el kernel del árbol** (`#2 Oct 8 2012`, "Manhattan") | kernel del stock V10c (`#1 Aug 8 2012`) |
@@ -157,4 +158,14 @@ Trampas del build que salieron al verificarlo:
   relinkea: borrar `obj/.../LINKED/<lib>.so`, `obj/lib/<lib>.so`, `system/lib/<lib>.so`.
 - Ruido de log: el stock es más ruidoso que el CM7 (1 942 contra 1 543 líneas en el
   arranque). Lo que más sobra en CM7 es `ONCRPC` (blob de Qualcomm, sin interruptor).
+
+### Carga con el teléfono apagado
+
+`init` ejecuta `/sbin/chargerlogo` en `on boot-pause`, que se dispara cuando el
+bootloader pasa `lge.reboot=pwroff` en la línea de comandos
+(`CHARGERMODE_CMDLINE_NAME/VALUE` en `BoardConfig.mk`). Los archivos de
+`chargemode/` son los del stock V10c (kernel `#1 Aug 8 2012`). Probar el binario sin
+apagar el teléfono: `adb root; /sbin/chargerlogo` y mirar su salida (el stock imprime
+`write fb success` / `fb_update success`; un segfault es `exit=139`). Aún sin
+verificar con el teléfono realmente apagado y el valor exacto que pone el bootloader.
 
