@@ -126,3 +126,35 @@ dumpsys SurfaceFlinger          # capas, formatos y stride
 ```
 
 Un valor de píxel constante `0x07E0` en toda la pantalla es el verde puro.
+
+## 8. Auditoría del árbol (2026-10-28)
+
+Se quitó lo que no se compila, no se instala o nadie lee. Verificado con una
+compilación completa y comparando el md5 de los 673 archivos de `system` y los 26
+del ramdisk contra el build anterior: solo cambian `init.e0.rc` y `build.prop`
+(los `.jar` se reempaquetan con otra fecha).
+
+| Quitado | Por qué |
+|---|---|
+| `libcamera/QualcommCameraHardware.*`, `msm_camera.h`, `include/mm-camera`, `include/mm-still` | HAL de cámara fuente ya sin uso (~350 llamadas de log) |
+| `libgralloc/`, `libcopybit/` | definen `gralloc.e400`/`copybit.e400`, que no se compilan; se usan los blobs `*.msm7k` |
+| `configs/` `e0_keypad.kl`, `touch_mcs8000.kl/.idc`, `7k_handset.kl`, `7x27a_kp.kcm.bin`, `qwerty.idc/.kcm.bin`, `nfcee_access.xml`; `prebuilt/scsi_wait_scan.ko` | ningún `.mk` los instala; herencia de CM9. El stock tampoco instala `e0_keypad.kl` ni `touch_mcs8000.kl` |
+| `libmm-omxcore`, `libOmxCore` en `PRODUCT_PACKAGES` | no hay módulos con ese nombre; vienen como blobs |
+| 10 propiedades de `system.prop` | sin lector en CM7, en los blobs de LG ni en el stock |
+| 6 comandos repetidos de `init.e0.rc` | `mkdir` de `init` solo hace `chown` si crea el directorio |
+
+Se dejó a propósito: `UsbController.cpp` (lo usa `BOARD_CUSTOM_USB_CONTROLLER`),
+`include/linux/msm_mdp.h` y `include/camera/CameraParameters.h`
+(`TARGET_SPECIFIC_HEADER_PATH`), `setprop wifi.interface` (está en dos secciones
+distintas) y el segundo `mkdir /data/misc/gpsone_d` (otro propietario; nunca llega a
+aplicarse, pero no es un duplicado exacto, conviene decidir cuál es el correcto).
+
+Trampas del build que salieron al verificarlo:
+
+- `build.prop` no se regenera al cambiar `system.prop`: borrar
+  `out/target/product/e400/system/build.prop` antes de compilar.
+- Si cambia la lista de fuentes de una librería (p. ej. `libcrypto`), `make` no la
+  relinkea: borrar `obj/.../LINKED/<lib>.so`, `obj/lib/<lib>.so`, `system/lib/<lib>.so`.
+- Ruido de log: el stock es más ruidoso que el CM7 (1 942 contra 1 543 líneas en el
+  arranque). Lo que más sobra en CM7 es `ONCRPC` (blob de Qualcomm, sin interruptor).
+
