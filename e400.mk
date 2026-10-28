@@ -103,11 +103,12 @@ PRODUCT_PACKAGES += \
     libcamera \
     gps.e400
 
-# FM radio: CAF tavarua stack (frameworks/base fmradio + JNI patches), the FM
-# app and fminit, which loads the firmware and keeps /dev/radio0 open
-PRODUCT_PACKAGES += \
-    FM \
-    fminit
+# FM radio is paused (see docs/E400_NOTES.md): the FM app and fminit are built by
+# the tree but not installed, because the stock kernel's radio-tavarua blocks in
+# xfr_intf_own when the radio is turned off.
+#PRODUCT_PACKAGES += \
+#    FM \
+#    fminit
 
 PRODUCT_LOCALES += ldpi mdpi
 
