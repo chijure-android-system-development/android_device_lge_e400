@@ -99,11 +99,6 @@ PRODUCT_PACKAGES += \
     libcamera \
     gps.e400
 
-# OMX 
-PRODUCT_PACKAGES += \
-    libmm-omxcore \
-    libOmxCore
-
 PRODUCT_LOCALES += ldpi mdpi
 
 
