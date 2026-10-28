@@ -46,8 +46,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := lib_driver_cmd_wext
 LOCAL_SHARED_LIBRARIES := libc libcutils
 LOCAL_CFLAGS := $(L_CFLAGS)
-LOCAL_SRC_FILES := driver_cmd_wext.c
-LOCAL_C_INCLUDES := $(WPA_SUPPL_DIR_INCLUDE)
+LOCAL_SRC_FILES := driver_cmd_wext.c bn_const_compat.c
+LOCAL_C_INCLUDES := $(WPA_SUPPL_DIR_INCLUDE) external/openssl/include
 include $(BUILD_STATIC_LIBRARY)
 
 ########################
