@@ -10,6 +10,11 @@ on boot
     # The stock ueventd.rc makes it 0666.
     chmod 0666 /dev/kgsl-3d0
 
+    # FM: /dev/msm_fm (audmgr session) is opened by mediaserver (group audio);
+    # /dev/radio0 stays root, only fminit opens it and hands the fd to the app
+    chown system audio /dev/msm_fm
+    chmod 0660 /dev/msm_fm
+
     #port-bridge
     chmod 0660 /dev/smd0
     chown system system /dev/smd0

@@ -2,6 +2,10 @@
 # system.prop for e400
 #
 ro.sf.lcd_density=120
+# SurfaceFlinger composes through the MDP: without it the stock gralloc blob
+# allocates every window from ashmem with MAP_LOCKED, which fails (EAGAIN, the
+# memlock limit is 64 KB) and nothing but the status bar is drawn.
+debug.composition.type=mdp
 
 debug.sf.hw=1
 ro.opengles.version=131072
@@ -34,3 +38,10 @@ ro.additionalmounts=/mnt/extra-sd
 ro.vold.switchablepair=/mnt/sdcard,/mnt/extra-sd
 
 # Camera
+
+# FM radio (stock values; chip ID 0x4020205 = 67240453, read from dmesg)
+ro.fm.analogpath.supported=true
+ro.fm.transmitter=false
+ro.fm.mulinst.recording.support=false
+hw.fm.version=67240453
+hw.fm.mode=normal

@@ -191,3 +191,24 @@ apagar el teléfono: `adb root; /sbin/chargerlogo` y mirar su salida (el stock i
 `write fb success` / `fb_update success`; un segfault es `exit=139`). **Verificado por el usuario**: con el teléfono apagado y el cargador conectado se muestra
 la animación de carga (el bootloader pasa `lge.reboot=pwroff`).
 
+
+## FM (2026-10-28, en curso)
+
+Estado: la radio sintoniza, el audio aun no suena.
+
+- Chip: Bahama/WCN2243, Chip ID 0x4020205 (= `hw.fm.version=67240453`, igual que el Y210).
+  `fm_qsoc_patches 67240453 0` (y `3 true`) terminan en exit 0 con los blobs del stock.
+- Stack: el mismo del Y210 (JNI qcom, `fmradio` Java, app FM, `fminit`), en `patches/`.
+  `fminit` carga el firmware y mantiene `/dev/radio0` abierto (el driver lo borra en cada open).
+- libaudio: `setFmOnOff` abre `/dev/msm_fm` + AUDIO_START (como `enableFM` del stock),
+  `mic_mute=0` al enrutar FM, `setFmVolume` por `SND_SET_VOLUME` (el ioctl
+  `SND_SET_FM_RADIO_VOLUME` no existe en este kernel), y `BTFMPinSwitching`
+  (`/dev/i2c-1`, esclavo 0x0c) tras el RPC, como el stock ("switch to FM mode").
+- Trampas encontradas: `make` no detecta cambios de CFLAGS; al activar `-DHAVE_FM_RADIO`
+  hay que borrar los `.o` que incluyen `IAudioFlinger.h`/`AudioSystem.h` **y**
+  `libandroid_runtime/AndroidRuntime.o`, o el JNI de FM nunca se registra.
+- `debug.composition.type=mdp` en system.prop NO es inerte: sin ella el gralloc del stock
+  reserva todo por ashmem con MAP_LOCKED (EAGAIN, memlock 64 KB) y solo se dibuja la
+  status bar. El build.prop del equipo no la habia perdido hasta regenerarlo.
+- Pendiente: la app FM se cuelga en el kernel (`xfr_intf_own`, estado D) al apagar la
+  radio; el audio no se ha oido aun (ruta FM con pines/codec sin verificar).

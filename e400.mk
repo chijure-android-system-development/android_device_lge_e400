@@ -103,6 +103,12 @@ PRODUCT_PACKAGES += \
     libcamera \
     gps.e400
 
+# FM radio: CAF tavarua stack (frameworks/base fmradio + JNI patches), the FM
+# app and fminit, which loads the firmware and keeps /dev/radio0 open
+PRODUCT_PACKAGES += \
+    FM \
+    fminit
+
 PRODUCT_LOCALES += ldpi mdpi
 
 

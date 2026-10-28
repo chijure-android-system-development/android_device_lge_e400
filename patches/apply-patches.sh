@@ -50,6 +50,15 @@ apply system/core system_core_property_service.patch
 #   y SIOCSIWFREQ no fatal (el driver Libra devuelve EOPNOTSUPP).
 apply external/wpa_supplicant_8 external_wpa_supplicant_8_e400.patch
 
+# frameworks/base — FM: JNI Qualcomm tavarua (BOARD_FM_DEVICE=qcom) + stack Java
+#   android.hardware.fmradio (mismo que el Y210; el chip es el mismo 0x4020205).
+apply frameworks/base frameworks_base_fm.patch
+copy_new frameworks_base_android_hardware_fm_qcom.cpp frameworks/base/core/jni/android_hardware_fm_qcom.cpp
+apply frameworks/base frameworks_base_fm_java.patch
+
+# packages/apps/FM — app FM para el stack tavarua (config en overlay/packages/apps/FM).
+apply packages/apps/FM packages_apps_FM.patch
+
 # packages/apps/FileManager — ProGuard falla en userdebug por android.support.v2.
 apply packages/apps/FileManager packages_apps_FileManager_proguard.patch
 

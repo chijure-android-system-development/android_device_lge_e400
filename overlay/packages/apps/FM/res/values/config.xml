@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- E400 uses the Qualcomm tavarua V4L2 FM (/dev/radio0), not BT FM -->
+    <bool name="require_bt">false</bool>
+
+    <!-- Seek is supported via TAVARUA_SRCHON private control -->
+    <bool name="seek_supported">true</bool>
+</resources>
