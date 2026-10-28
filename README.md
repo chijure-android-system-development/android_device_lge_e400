@@ -5,7 +5,7 @@
 | Prueba                          | Resultado | Comentario                          |
 |--------------------------------|-----------|-------------------------------------|
 | Arranque del sistema           | ✅        | Inicia correctamente sin errores    |
-| Rotación automática de pantalla| ❌        | No responde al girar el dispositivo |
+| Rotación automática de pantalla| ✅        | Gira con el sensor, sin rayas (parche de stride en SurfaceFlinger) |
 | Apagado y reinicio             | ✅        | Funciona normalmente                |
 | Modo avión                     | 🟡        | No probado aún                      |
 | Estabilidad general            | ✅        | No hay reinicios aleatorios         |
@@ -38,7 +38,7 @@
 | Prueba                 | Resultado | Comentario                            |
 |-----------------------|-----------|---------------------------------------|
 | Wi-Fi                 | ✅        | Se conecta y navega sin problemas     |
-| Bluetooth             | ❌        | No enciende desde ajustes             |
+| Bluetooth             | ✅        | Verificado a mano (kernel del stock)  |
 | Datos móviles         | ✅        | Detecta señal y navega                |
 | APN detectado         | ✅        | Automático con chip Claro             |
 | GPS                   | 🟡        | Detecta satélites pero no fija aún    |
@@ -47,9 +47,9 @@
 
 | Prueba                       | Resultado | Comentario                        |
 |-----------------------------|-----------|-----------------------------------|
-| Cámara trasera (foto/video) | ❌        | App se cierra al abrir cámara     |
-| Enfoque                     | ❌        | No aplica, sin cámara funcional   |
-| App de cámara               | ❌        | Crashea                           |
+| Cámara trasera (foto/video) | ✅        | Foto 2048x1536 y video MPEG-4 640x480 (encoder HW) |
+| Enfoque                     | 🟡        | El HAL no reporta autofocus (foco fijo) |
+| App de cámara               | ✅        | Abre y funciona                   |
 
 ## 📂 Almacenamiento
 
@@ -66,6 +66,7 @@
 | Prueba                          | Resultado | Comentario                       |
 |--------------------------------|-----------|----------------------------------|
 | Carga por USB                   | ✅        | Icono de carga se muestra        |
+| Carga con el teléfono apagado   | ✅        | Animación del stock (`chargerlogo` V10c) |
 | Nivel de batería correcto       | ✅        | Cambia de forma realista         |
 | Suspensión y despertar          | 🟡        | Se apaga pantalla pero no despierta siempre |
 

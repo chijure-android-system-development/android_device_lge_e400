@@ -114,8 +114,8 @@ apertura de Cámara dieron 0 cuadros verdes y 0 errores `mdp_ppp` (con el anteri
   **Las librerías de framework del stock no se pueden intercambiar** con las de CM7 (`libsurfaceflinger`, `libGLES_android`, `libpixelflinger`): el framework cae (pantalla blanca y luego negra). Si pasa, recuperar con `adb root`, no con `su`.
 - Animación de rotación "fea": probablemente era lo mismo que las rayas; pendiente confirmarlo con el usuario.
 - Video con poca luz: bajo fps y borroso (límite del sensor/HAL, sin verificar con luz).
-- Tras el cambio de kernel, verificado a mano: touch, audio y Bluetooth OK.
-  Sin probar: vibración, sensores y modo avión.
+- Tras el cambio de kernel, verificado a mano: touch, audio, Bluetooth, rotación y
+  carga con el teléfono apagado OK. Sin probar: vibración, sensores y modo avión.
 
 ## 7. Cómo diagnosticar gráficos desde adb
 
@@ -166,6 +166,6 @@ bootloader pasa `lge.reboot=pwroff` en la línea de comandos
 (`CHARGERMODE_CMDLINE_NAME/VALUE` en `BoardConfig.mk`). Los archivos de
 `chargemode/` son los del stock V10c (kernel `#1 Aug 8 2012`). Probar el binario sin
 apagar el teléfono: `adb root; /sbin/chargerlogo` y mirar su salida (el stock imprime
-`write fb success` / `fb_update success`; un segfault es `exit=139`). Aún sin
-verificar con el teléfono realmente apagado y el valor exacto que pone el bootloader.
+`write fb success` / `fb_update success`; un segfault es `exit=139`). **Verificado por el usuario**: con el teléfono apagado y el cargador conectado se muestra
+la animación de carga (el bootloader pasa `lge.reboot=pwroff`).
 
