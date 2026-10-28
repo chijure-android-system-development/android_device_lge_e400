@@ -3,13 +3,8 @@
 #
 ro.sf.lcd_density=120
 
-debug.fb.rgb565=1
 debug.sf.hw=1
-debug.enabletr=false
-debug.composition.type=mdp
 ro.opengles.version=131072
-com.qc.hardware=true
-ro.sf.compbypass.enable
 
 persist.sys.use_dithering=1
 
@@ -38,10 +33,4 @@ telephony.lteOnGsmDevice=0
 ro.additionalmounts=/mnt/extra-sd
 ro.vold.switchablepair=/mnt/sdcard,/mnt/extra-sd
 
-persist.sys.usb.config=mtp,adb
-
 # Camera
-ro.camera.preview.VideoSizeValues=176x144,320x240,352x288,640x480
-ro.camera.picture.PictureSizeValues=640x480,1024x768,1280x960,1600x1200,2048x1536,2592x1944
-debug.camcorder.disablemeta=1
-ro.config.nocheckin=yes
