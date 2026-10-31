@@ -40,4 +40,9 @@
              android:emulated="false"
              android:maxFileSize="4096"
              android:allowMassStorage="true" />
+    <storage android:mountPoint="/storage/usbdisk"
+             android:storageDescription="@string/storage_usb"
+             android:removable="true"
+             android:primary="false"
+             android:emulated="false" />
 </StorageList>

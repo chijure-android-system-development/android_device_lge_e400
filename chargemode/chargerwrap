@@ -1,0 +1,25 @@
+#!/system/bin/sh
+# Charger-mode entry point. The bootloader also boots with lge.reboot=pwroff
+# after a spurious reset (e.g. the silent reset the 3.4 kernel suffers), and
+# the stock chargerlogo would then wait for the power key with the phone idle.
+# Android leaves /data/misc/clean_poweroff on a normal shutdown; only then
+# (and only with a charger attached) run chargerlogo, else go on to Android.
+# Boot-reason trail, to tell the reset sources apart
+{
+    echo "--- $(date) clean=$([ -e /data/misc/clean_poweroff ] && echo 1 || echo 0)"
+    echo "boot_reason=$(cat /proc/sys/kernel/boot_reason 2>&1)"
+    cat /proc/cmdline
+} >> /data/local/tmp/charger-boot.txt 2>&1
+if [ -e /data/misc/clean_poweroff ]; then
+    i=0
+    while [ $i -lt 15 ]; do
+        for n in usb ac; do
+            if [ "$(cat /sys/class/power_supply/$n/online 2>/dev/null)" = "1" ]; then
+                exec /sbin/chargerlogo
+            fi
+        done
+        i=$((i+1))
+        sleep 1
+    done
+fi
+reboot
