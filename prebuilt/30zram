@@ -1,0 +1,38 @@
+#!/system/bin/sh
+# Compressed swap in RAM (zram). 80 MB of virtual swap; the compressed pages
+# cost roughly a third of that in real memory, only once they are in use.
+# Runs from CM's sysinit (init.d), which starts very early in boot, so wait
+# for the zram sysfs node and retry swapon before giving up.
+ZRAM=/dev/block/zram0
+SIZE=83886080
+export PATH=/sbin:/system/sbin:/system/bin:/system/xbin
+
+# already active (script re-run)?
+grep -q zram0 /proc/swaps 2>/dev/null && exit 0
+
+i=0
+while [ ! -e /sys/block/zram0/disksize ] && [ $i -lt 30 ]; do
+    sleep 1
+    i=$((i + 1))
+done
+[ -e /sys/block/zram0/disksize ] || { log -p e -t zram "no zram0 sysfs node"; exit 1; }
+
+# the block node is created by ueventd; give it a moment
+i=0
+while [ ! -b $ZRAM ] && [ $i -lt 20 ]; do
+    sleep 1
+    i=$((i + 1))
+done
+[ -b $ZRAM ] || { log -p e -t zram "no $ZRAM"; exit 1; }
+
+echo $SIZE > /sys/block/zram0/disksize || { log -p e -t zram "disksize write failed"; exit 1; }
+mkswap $ZRAM >/dev/null 2>&1
+
+i=0
+until swapon $ZRAM 2>/dev/null; do
+    i=$((i + 1))
+    [ $i -ge 5 ] && { log -p e -t zram "swapon failed"; exit 1; }
+    sleep 1
+done
+echo 0 > /proc/sys/vm/page-cluster
+log -p i -t zram "swap enabled on $ZRAM ($SIZE bytes)"

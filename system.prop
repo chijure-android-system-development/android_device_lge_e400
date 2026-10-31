@@ -23,3 +23,5 @@ ro.telephony.default_network=0
 telephony.lteOnGsmDevice=0
 
 persist.sys.usb.config=mass_storage,adb
+persist.service.adb.enable=1
+ro.adb.secure=0
