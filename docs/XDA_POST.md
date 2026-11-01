@@ -15,6 +15,7 @@ Working:
 - Wi-Fi (scan, connect, browse), Bluetooth (stable address across reboots)
 - Camera: photo up to 2048x1536 and HW-encoded MPEG-4 video
 - USB mass storage, internal and external SD, off-mode charging animation (stock chargerlogo)
+- USB OTG host (pendrive mounts at /mnt/usbdisk): the ID pin is not wired to the SoC, so switch it with the included "USB host mode" app or `setprop sys.otg.mode host`; needs an OTG cable with external 5 V
 
 Partly done / untested:
 - SIM / mobile network: the RIL is ported (SIM reaches READY/LOADED, IMSI is read) but I could not yet register on a network. My own Movistar SIM was rejected by the network and a SIM from another operator hits the carrier lock (the phone is e0_mov_la, Movistar). Calls, SMS and mobile data are NOT verified. I am getting another Movistar SIM to test.

@@ -309,3 +309,23 @@ Requiere el kernel parcheado (`kernel`, generado con `tools/patch_kernel_fm.py`)
   Wi-Fi/BT/standby largos.
 - Sin commit en device/lge/e400, vendor/lge/e400 ni arbol TWRP; xda-posts con ediciones locales
   sin push (commit d444793 es lo ultimo publicado).
+
+
+### USB OTG host y comprobaciones del 2026-11-01
+
+- OTG host funciona sin tocar el kernel: `OTG State: a_host`, pendrive 16 GB vfat montado solo en
+  `/mnt/usbdisk`. Cambios: `vold.fstab` (`usbdisk`), `init.e0.rc` (`mkdir /mnt/usbdisk`, debugfs,
+  triggers `sys.otg.mode`) y `OtgSwitch` en `PRODUCT_PACKAGES` (rama `gingerbread` del repo de la app,
+  bajada por local_manifest). `OTGSC` (0xa08001a4) = 0x09200D20: bit 8 (ID) = 1, el pin no llega.
+- Busqueda previa (web y GitHub de CyanogenMod): no hay parche de OTG para CM7/Gingerbread publicado;
+  `vold.fstab` con `usbdisk` es el camino estandar de CM en equipos con host nativo (Galaxy S2,
+  Xoom, AT100). La novedad aqui es el interruptor por propiedad/app por el pin ID sin cablear.
+- Acelerometro (BMA250) confirmado con giros reales: `WindowManager` registra rotaciones 0-1-3.
+  La fila de README quedaba en rojo por una nota antigua.
+- GPU: kgsl-3d0 recibe trabajo solo de apps OpenGL (Galeria 3D carga Adreno y el contador de
+  interrupciones sube); SurfaceFlinger compone con MDP (`debug.composition.type=mdp`) sin GPU.
+  Reloj de GPU fijo en 133 MHz. El log muestra `eglCreateImageKHR ...` en cada transicion de
+  `system_server` (ruido del blob Adreno; el contador `ret` sube sin efecto visible).
+- Boton Home "sin respuesta": falso positivo; el primer arranque tras un wipe tiene carga ~10.9 a los
+  3 min. Con el sistema asentado responde bien.
+- Instalado con TWRP estable (kernel 2.6.38); el TWRP de kernel 3.4 rechaza el ext4 del zip y se reinicia.

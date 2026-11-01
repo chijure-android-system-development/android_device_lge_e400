@@ -60,6 +60,7 @@
 | SD externa                  | ✅        | Monta mmcblk1p1 correctamente              |
 | Montaje automático de SD    | ✅        | Detecta al insertar                        |
 | Almacenamiento por USB      | ✅        | Verificado por el usuario                  |
+| USB OTG (host)              | ✅        | Pendrive vfat en /mnt/usbdisk; ver sección |
 | Escritura/lectura en /data  | ✅        | Pruebas OK                                 |
 
 ## 🔋 Batería y energía
@@ -76,7 +77,7 @@
 | Prueba                     | Resultado | Comentario                         |
 |---------------------------|-----------|------------------------------------|
 | Sensor de proximidad      | 🟡        | No probado                         |
-| Acelerómetro              | ❌        | SensorService no puede iniciar     |
+| Acelerómetro              | ✅        | BMA250, rotación probada           |
 | Botón Power               | ✅        | Funciona                           |
 | Botones volumen           | ✅        | Funcionan                          |
 | Botón home                | ✅        | Funciona                           |
@@ -101,7 +102,22 @@
 | Multitarea básica             | ✅        | Dos apps sin lag                   |
 | Fluidez del launcher          | ✅        | Sin tirones                        |
 | Cuelgues en apps comunes      | ❌        | Algunas apps crashean (Camera)     |
-| Logcat sin errores críticos   | 🟡        | Algunos Warnings por sensores      |
+| Logcat sin errores críticos   | 🟡        | Warnings de Adreno (eglCreateImageKHR) |
+
+## 🔌 USB OTG (host)
+
+Probado el 2026-11-01 con un pendrive de 16 GB (vfat). El kernel stock 2.6.38 ya trae el host
+(`msm_hsusb_host.0`, `usb-storage`, control en debugfs); lo que faltaba era el montaje y un interruptor.
+
+- El pin ID del micro-USB no llega al SoC, así que no hay cambio automático: el modo host se fuerza
+  por debugfs. `setprop sys.otg.mode host` (o la app `OtgSwitch`, `packages/apps/OtgSwitch`, rama
+  `gingerbread`); `peripheral` devuelve adb/carga por USB. `init.e0.rc` monta debugfs y enlaza la
+  propiedad con `/sys/kernel/debug/otg/mode`.
+- El teléfono no da 5 V: hace falta un cable OTG con alimentación externa.
+- `configs/vold.fstab` monta el disco en `/mnt/usbdisk` (`/devices/platform/msm_hsusb_host.0`).
+- El modo host desactiva la detección de VBUS/ID y se pierde al reiniciar. Con host activo el puerto
+  USB no sirve para adb: usar adb por WiFi (`setprop service.adb.tcp.port 5555`).
+- Ratón y teclado (HID) se ven como dispositivos de entrada normales; ratón probado en CM10.1.
 
 ## 📜 Extras
 

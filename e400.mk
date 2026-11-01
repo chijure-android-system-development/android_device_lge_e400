@@ -88,7 +88,8 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml
 
 PRODUCT_PACKAGES += \
-    hwprops
+    hwprops \
+    OtgSwitch
 
 # Wifi
 PRODUCT_COPY_FILES += \

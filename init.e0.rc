@@ -66,6 +66,7 @@ on init
 # create mountpoints for storage
     mkdir /mnt/sdcard 0000 system system
     mkdir /mnt/extra-sd 0000 system system
+    mkdir /mnt/usbdisk 0000 system system
     symlink /mnt/sdcard /sdcard
 
 # create /persist mountpoint for WiFi calibration
@@ -341,3 +342,15 @@ on property:gsm.version.baseband=""
 
 on property:dev.bootcomplete=1
     exec /system/bin/hwprops
+
+# USB OTG host: the ID pin is not seen by the SoC, so the mode is forced through
+# debugfs. "setprop sys.otg.mode host" (or the OtgSwitch app) before plugging
+# the OTG cable, "peripheral" to get adb/charging back over USB.
+on boot
+    mount debugfs debugfs /sys/kernel/debug
+
+on property:sys.otg.mode=host
+    write /sys/kernel/debug/otg/mode host
+
+on property:sys.otg.mode=peripheral
+    write /sys/kernel/debug/otg/mode peripheral
