@@ -91,7 +91,7 @@ blob difieren: `getShutterSound` = 4, `getBufferInfo` = 10, `encodeData` = 11,
 3. `HAL_openCameraHardware(id, mode)`: el blob rechaza `mode` 0; se pasa 1 (2D).
 
 Validado: preview, foto 2048x1536, video MPEG-4 640x480 con encoder de hardware.
-Autofocus no soportado por el HAL. En poca luz el sensor baja a ~5-8 fps (el HAL
+En poca luz el sensor baja a ~5-8 fps (el HAL
 solo acepta el rango `5000,30000`).
 
 ### Kernel
@@ -123,17 +123,18 @@ apertura de Cámara dieron 0 cuadros verdes y 0 errores `mdp_ppp` (con el anteri
   `video*` (`camera` frente a `system`) y `tun`. Antes de activarlo: corregir esas seis
   al valor del stock y probar RPC, cámara, audio y Bluetooth. Mientras tanto, lo que
   haga falta se arregla con `chmod`/`chown` en `init.e0.rc`.
-- Animación de rotación "fea": probablemente era lo mismo que las rayas; pendiente confirmarlo con el usuario.
-- Video con poca luz: bajo fps y borroso (límite del sensor/HAL, sin verificar con luz).
+- Vibración y modo avión: confirmados por el usuario (2026-10-29), funcionan.
+- Animación de rotación "fea": era lo mismo que las rayas. **Confirmado por el usuario (2026-10-29): la rotación ya funciona bien en nuestra ROM.**
+- Video con poca luz: bajo fps y borroso. **Es el comportamiento del stock** (2026-10-29: 3 clips del stock, 640x480 MPEG-4 SP + AMR-NB, ~7.9 fps constantes en luz tenue, cuadro oscuro y con ruido): limite del sensor, no es bug de nuestra ROM.
 - Tras el cambio de kernel, verificado a mano: touch, audio, Bluetooth, rotación y
   carga con el teléfono apagado OK. Sin probar: vibración, sensores y modo avión.
 
 ### Hardware que declara el sistema
 
 `e400.mk` instala los mismos `/etc/permissions/*.xml` que el stock V10c (más
-`android.software.sip.voip`, propio de CM7). Antes declaraba autofoco y flash
-(`flash-autofocus`), cámara frontal, giroscopio y sensor de luz, que el teléfono **no
-tiene** (el HAL dice `AutoFocus is not supported` y `flash not supported`, solo hay la
+`android.software.sip.voip`, propio de CM7). Antes declaraba flash,
+cámara frontal, giroscopio y sensor de luz, que el teléfono **no
+tiene** (el HAL dice `flash not supported`, solo hay la
 cámara 0, y los sensores son `bma250`, `bmm050` y `proximity`), y no declaraba cámara,
 acelerómetro, touch, ubicación ni Bluetooth. Declarar de más hace que las apps pidan
 funciones que no existen. Para comparar: `comm` de `ls /etc/permissions` del stock
@@ -192,9 +193,10 @@ apagar el teléfono: `adb root; /sbin/chargerlogo` y mirar su salida (el stock i
 la animación de carga (el bootloader pasa `lge.reboot=pwroff`).
 
 
-## FM (2026-10-28, en curso)
+## FM (2026-10-28)
 
-Estado: la radio sintoniza, el audio aun no suena.
+Estado: funciona (sintoniza, suena por los audifonos, se apaga y enciende sin colgarse).
+Requiere el kernel parcheado (`kernel`, generado con `tools/patch_kernel_fm.py`).
 
 - Chip: Bahama/WCN2243, Chip ID 0x4020205 (= `hw.fm.version=67240453`, igual que el Y210).
   `fm_qsoc_patches 67240453 0` (y `3 true`) terminan en exit 0 con los blobs del stock.
@@ -216,8 +218,39 @@ Estado: la radio sintoniza, el audio aun no suena.
   FORCE_SPEAKER para MEDIA si se cuelga: la musica sale por el altavoz hasta reiniciar
   mediaserver (`dumpsys media.audio_policy` -> "Force use for media").
 - libaudio no podia abrir /dev/i2c-1 (root 0600): init.e0.rc ahora lo deja system:audio 0660.
-- Pendiente: la app FM se cuelga en el kernel (`xfr_intf_own`, estado D) al apagar la
-  radio; el audio no se ha oido aun (ruta FM con pines/codec sin verificar).
+- **Cuelgue al apagar/encender (kernel):** `tavarua_handle_interrupts` toma `radio->lock` y,
+  con el bit ERROR (`INTSTAT3 & 0x80`, que el chip levanta tras cada `tavarua_start <2>`),
+  llama a `sync_read_xfr(ERROR_CODE)` (bloque de depuracion `FM_DEBUG` compilado en el stock
+  V10c); `sync_read_xfr` -> `xfr_intf_own` vuelve a tomar el mismo lock: el worker se
+  bloquea contra si mismo y toda ioctl posterior queda en estado D hasta reiniciar.
+  Visto en `/proc/<pid>/stack`: `xfr_intf_own <- sync_read_xfr <- tavarua_handle_interrupts`.
+  Parche (`tools/patch_kernel_fm.py`, un solo `bge` -> `b` en 0xc030bd5c) sobre el zImage
+  stock; el gzip recomprimido mide lo mismo, asi que el resto del zImage no cambia.
+  Verificado: 3 ciclos apagar/encender, el bit ERROR sale cada vez y ya no hay tareas en D.
+  El fuente del kernel (CM9, `kernel/lge/e400`) tiene el mismo bloque.
+- **Audio:** hacia falta la configuracion analogica del DAC (`fm_qsoc_patches <ver> 3 true`,
+  paso `config_dac` de `init.qcom.fm.sh`; el stock declara `ro.fm.analogpath.supported=true`).
+  libaudio la ejecuta al pasar a FM_HEADSET/FM_SPEAKER (`run_fm_analog_dac_config`), despues
+  del cambio de pines y de la habilitacion de la ruta, y fija el volumen (ultimo nivel o 1)
+  antes de abrirla para evitar un golpe a volumen alto.
+- Volumen (EN CURSO, sin cerrar): en FM no hay mezclador de AudioFlinger, asi que el unico
+  control es el nivel del DSP (`SND_SET_VOLUME`, metodo VOICE); el chip no tiene volumen
+  propio (V4L2_CID_AUDIO_VOLUME es un no-op en el driver). En musica el DSP queda fijo en
+  `ceil(v*7)` (0-7, `setMasterVolume`) y el volumen lo hace el software.
+  Historial: con escala 0-5 cada nivel agrupaba 3 teclas y el salto al cruzar un limite se
+  sentia como bajar de 10 a 5 (el volumen de pantalla no lo reflejaba); con 0-7 (`vol = pct*7/100`,
+  minimo 1) el log sale parejo pero el usuario lo oyo **mas bajo** que con 0-5, es decir
+  los niveles 6-7 podrian no ser mas fuertes que el 5 (el rpc no devuelve error).
+  El override temporal `debug.fm.vol` (TEMP-TEST) ya se quito de `setFmVolume`
+  (zip del 2026-10-28 12:14, md5 a0010139...). Queda la escala 0-7 sin afinar.
+  **Causa hallada (2026-10-29, log del stock):** el stock SI tiene `setFmVolume` y usa la escala
+  **0-15**: cada tecla del FM loguea `setFmVolume(n/15)` -> `rpc_snd_set_volume(32, 0, n)`, n=0..15
+  (pasos uniformes). Nosotros topabamos en 7, por eso el maximo sonaba bajo y los pasos eran
+  distintos. Cambiado a `vol = (volPct*15+50)/100` (0-15). **Probado por el usuario (2026-10-29): el volumen del FM por audifonos funciona como en el stock. CERRADO.**
+  El stock no tiene `setFmVolume`; su AudioService/libaudiopolicy tienen los mismos pasos y la
+  misma curva `computeVolume` que nuestra ROM (musica 15, FM 15, llamada 5, resto 7).
+- Verificacion de los fixes de FM (2026-10-28): kernel parcheado flasheado en mmcblk0p9
+  (backup `~/boot_backup_e400_2026-10-28.img`), 3 ciclos apagar/encender sin tareas en D.
 
 ## Telefonia / SIM (2026-10-28)
 
@@ -246,3 +279,33 @@ Estado: la radio sintoniza, el audio aun no suena.
 - Por hacer: probar con otra SIM Movistar activa; si tambien se deniega, hacer busqueda manual
   de redes (Ajustes > Operadores de red), probarla en otro telefono y revisar IMEI/NV (libnv).
 - Sin validar aun: llamadas, SMS y datos (rmnet0/netmgrd/qmuxd).
+
+### Insercion de SIM en caliente (2026-10-29)
+
+- Al insertar la SIM con el telefono encendido, el libril del stock reporta un instante
+  `CARDSTATE_PRESENT apps=1 gsmIdx=-1 app0 state=APPSTATE_DETECTED`. `QualcommNoSimReadyRIL.IccHandler`
+  hace `getApplication(-1)` sin comprobar: `FATAL EXCEPTION: IccHandler` (ArrayIndexOutOfBounds) y el
+  hilo muere, asi que despues no detecta mas cambios de SIM hasta reiniciar.
+- Arreglo en `ril/.../LGEQualcommUiccRIL.responseIccCardStatus`: si el indice de suscripcion es
+  invalido y hay apps, se devuelve la tarjeta con 0 apps e indices -1 (IccCard la da por ABSENT).
+  Con indice valido el camino no cambia (SIM bloqueada por operador sigue PERSO -> NETWORK_LOCKED).
+- Probado y descartado: ignorar apps con `state=-1`. Entonces queda `apps=0` con `gsmIdx=0` y
+  `IccCard.getIccCardState` hace `getApplication(0)`: `FATAL EXCEPTION: main` en com.android.phone.
+  El caso `state=-1` (se ve tras LOADED) es mejor dejarlo lanzar la excepcion original
+  (`Unrecognized RIL_AppState: -1`): el GET_SIM_STATUS falla sin dano y llega otro estado bueno.
+- Verificado: arranque con SIM, READY, 0 FATAL EXCEPTION. Pendiente: reinsertar la SIM en caliente.
+
+
+### Estado al cierre de la sesion CM7 (2026-10-29)
+
+- Zip final local: `out/target/product/e400/cm-7-20261028-UNOFFICIAL-e400.zip`, md5
+  `926e4d64937b5631a9c7a65e208d22f8`, 84117577 bytes (FM 0-15, GPS HAL stock + librpc Y210,
+  fix RIL SIM en caliente). Los posts XDA y docs/XDA_POST.md aun citan el zip anterior
+  (md5 a0010139..., 84.5 MB) que es el subido a AFH/Drive: al resubir hay que actualizar md5,
+  tamano y enlaces, y anadir al changelog: FM volumen 0-15, GPS stock, fix RIL.
+- Pendiente: reinsercion de SIM en caliente; GPS fix final (>=5 min al aire libre; "RPC
+  authentication error" en SET_SUPL_VERSION sin explicar); llamadas/SMS/datos (SIM Movistar
+  activa); confirmar combo de recovery Vol- + Home + Power; backup/restore TWRP y microSD;
+  Wi-Fi/BT/standby largos.
+- Sin commit en device/lge/e400, vendor/lge/e400 ni arbol TWRP; xda-posts con ediciones locales
+  sin push (commit d444793 es lo ultimo publicado).

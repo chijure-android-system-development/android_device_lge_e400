@@ -11,8 +11,9 @@ Working:
 - Display with the Adreno 200 in use (no more software rendering), auto-rotation without stripes
 - Touch (multitouch), accelerometer, compass, proximity
 - Audio: speaker, headset (also when plugged in before boot), voice recorder, mic
+- FM radio: works with the headset as antenna (turns on and off without hanging); volume steps still being tuned
 - Wi-Fi (scan, connect, browse), Bluetooth (stable address across reboots)
-- Camera: photo up to 2048x1536 and HW-encoded MPEG-4 video (the E400 has a fixed-focus camera, no autofocus)
+- Camera: photo up to 2048x1536 and HW-encoded MPEG-4 video
 - USB mass storage, internal and external SD, off-mode charging animation (stock chargerlogo)
 
 Partly done / untested:
@@ -20,25 +21,24 @@ Partly done / untested:
 - GPS: sees satellites, no fix yet
 - Airplane mode, vibration, sensors beyond the basics: not tested
 
-Not working:
-- FM radio: the chip tunes, but there is no audio and the app hangs in the stock kernel's radio driver when the radio is turned off. The app is not installed in this build.
-- Camera autofocus (the hardware has none)
+Notes on FM: the stock kernel's radio driver deadlocks when the chip reports an error, so the kernel in the zip has a one-instruction patch (tools/patch_kernel_fm.py in the device tree). The rest is the stock V10c kernel.
 
 [B]What is different from other attempts[/B]
-- Stock V10c kernel (zImage) instead of a rebuilt one. A different kernel gave green frames and broken MDP.
+- Stock V10c kernel (zImage, with one instruction patched for FM) instead of a rebuilt one. A different kernel gave green frames and broken MDP.
 - Stock gralloc/copybit/camera HAL blobs. The camera uses a small wrapper over the stock LG HAL.
 - The stock RIL blobs. Some of the telephony blobs I started from came from another firmware and were replaced with the V10c ones.
 - Everything not in the ROM source is kept as small, reviewable patches in the device tree (patches/apply-patches.sh).
 
 [B]Installation[/B]
 1. Back up everything (at least /data and the boot partition).
-2. Boot a custom recovery (I used TWRP).
+2. Boot a custom recovery (I used TWRP): with USB debugging on, run "adb reboot recovery", or with the phone off hold Volume Down + Home + Power until the LG logo appears.
 3. Wipe data/factory reset, cache and dalvik (first install from stock needs it).
 4. Flash the zip, wipe cache and dalvik again, reboot. First boot takes about a minute.
 
 [B]Download[/B]
-[DOWNLOAD LINK]
-MD5: 601ff46fbf7c8806db1a2557293f6b1e (cm-7-20261028-UNOFFICIAL-e400.zip, 83.6 MB)
+https://www.androidfilehost.com/?fid=17900174959292982495
+Mirror (Google Drive): https://drive.google.com/file/d/1VUQiyAJwgIziT3s2nGUZ5nXiIUGbQ4vN/view?usp=sharing
+MD5: a0010139016a84bd2ad4103dc5041e41 (cm-7-20261028-UNOFFICIAL-e400.zip, 84.5 MB)
 
 [B]Sources[/B]
 - Device tree (branch gingerbread): https://github.com/chijure-android-system-development/android_device_lge_e400

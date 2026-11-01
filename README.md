@@ -42,7 +42,7 @@
 | Datos móviles         | 🟡        | Sin validar: ver fila de SIM          |
 | APN detectado         | 🟡        | Sin validar (necesita registro en red)|
 | SIM                   | 🟡        | SIM Movistar: READY/LOADED, registro denegado (¿SIM suspendida?); SIM de otro operador: bloqueo de red del equipo (e0_mov_la) |
-| Radio FM              | ❌        | Sintoniza, no suena, y la app se cuelga al apagar (driver del kernel stock); FM y fminit no se instalan |
+| Radio FM              | ✅        | Sintoniza, suena por los audifonos con el volumen 0-15 como el stock y se apaga/enciende sin colgarse (requiere el kernel parcheado, `tools/patch_kernel_fm.py`) |
 | GPS                   | 🟡        | Detecta satélites pero no fija aún    |
 
 ## 📷 Cámara
@@ -50,7 +50,6 @@
 | Prueba                       | Resultado | Comentario                        |
 |-----------------------------|-----------|-----------------------------------|
 | Cámara trasera (foto/video) | ✅        | Foto 2048x1536 y video MPEG-4 640x480 (encoder HW) |
-| Enfoque                     | 🟡        | El HAL no reporta autofocus (foco fijo) |
 | App de cámara               | ✅        | Abre y funciona                   |
 
 ## 📂 Almacenamiento
