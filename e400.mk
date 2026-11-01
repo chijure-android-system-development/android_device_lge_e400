@@ -1,7 +1,11 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
-# The gps config appropriate for this device
-$(call inherit-product, device/common/gps/gps_us_supl.mk)
+# GPS: stock V10c HAL (gps.default.so) and its configuration, instead of the
+# open-source gps.e400 (RPC/AMSS version guessed). See docs/E400_NOTES.md.
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/gps.conf:system/etc/gps.conf \
+    $(LOCAL_PATH)/configs/loc_parameter.ini:system/etc/loc_parameter.ini \
+    $(LOCAL_PATH)/configs/wiperconfig.xml:system/etc/wiperconfig.xml
 
 $(call inherit-product-if-exists, vendor/lge/e400/e400-vendor.mk)
 
@@ -103,15 +107,13 @@ PRODUCT_COPY_FILES += \
 # HW HALS
 PRODUCT_PACKAGES += \
     libaudio \
-    libcamera \
-    gps.e400
+    libcamera
 
-# FM radio is paused (see docs/E400_NOTES.md): the FM app and fminit are built by
-# the tree but not installed, because the stock kernel's radio-tavarua blocks in
-# xfr_intf_own when the radio is turned off.
-#PRODUCT_PACKAGES += \
-#    FM \
-#    fminit
+# FM radio: needs the patched kernel (tools/patch_kernel_fm.py), otherwise the
+# stock radio-tavarua deadlocks in xfr_intf_own (see docs/E400_NOTES.md).
+PRODUCT_PACKAGES += \
+    FM \
+    fminit
 
 PRODUCT_LOCALES += ldpi mdpi
 

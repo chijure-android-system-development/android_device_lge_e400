@@ -82,3 +82,8 @@ lib/libmm-omxcore.so
 bin/hciattach
 bin/hci_qcomm_init
 lib/libaudioeq.so
+lib/hw/gps.default.so
+lib/libloc_api-rpc-qc.so
+lib/libgps.utils.so
+lib/libcommondefs.so
+lib/librpc.so

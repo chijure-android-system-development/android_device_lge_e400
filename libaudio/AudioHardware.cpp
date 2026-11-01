@@ -31,6 +31,8 @@
 #include <fcntl.h>
 #include <linux/i2c.h>
 #include <errno.h>
+#include <sys/wait.h>
+#include <cutils/properties.h>
 
 // hardware specific functions
 
@@ -1436,6 +1438,42 @@ static status_t run_fm_audio_path_enable(void)
     }
     return err;
 }
+
+// Stock init.qcom.fm.sh "config_dac" step: fm_qsoc_patches <chip version> 3
+// <analog>. ro.fm.analogpath.supported=true on the stock E400, so the chip's
+// audio reaches the codec through the analog path; without this call the
+// radio tunes (real RF) but nothing is heard.
+static status_t run_fm_analog_dac_config(void)
+{
+    char analog[PROPERTY_VALUE_MAX];
+    char version[PROPERTY_VALUE_MAX];
+    property_get("ro.fm.analogpath.supported", analog, "false");
+    property_get("hw.fm.version", version, "");
+    if (strcmp(analog, "true") != 0 || version[0] == '\0')
+        return NO_ERROR;
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        LOGE("FmAnalogDacConfig: fork failed: %s", strerror(errno));
+        return -errno;
+    }
+    if (pid == 0) {
+        execl("/system/bin/fm_qsoc_patches", "fm_qsoc_patches", version, "3", "true", (char *)NULL);
+        _exit(127);
+    }
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) {
+        LOGE("FmAnalogDacConfig: waitpid failed: %s", strerror(errno));
+        return -errno;
+    }
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        LOGE("FmAnalogDacConfig: fm_qsoc_patches failed, status 0x%x", status);
+        return UNKNOWN_ERROR;
+    }
+    LOGI("FmAnalogDacConfig: succeeded");
+    return NO_ERROR;
+}
 #endif
 
 static status_t do_route_audio_rpc(uint32_t device,
@@ -1530,7 +1568,13 @@ status_t AudioHardware::doAudioRouteOrMute(uint32_t device)
             mCurSndDevice == SND_DEVICE_FM_SPEAKER;
     if (toFm && device != mCurSndDevice) {
         run_btfm_pin_switch(MODE_FM);
+        // The FM audio becomes audible when the analog path is enabled below, and
+        // the DSP is still at its default (loud) volume until AudioFlinger calls
+        // setFmVolume() a moment later: start from the last level (at least 1).
+        set_volume_rpc(SND_DEVICE_CURRENT, SND_METHOD_VOICE,
+                mFmVolume > 0 ? mFmVolume : 1, m7xsnddriverfd);
         run_fm_audio_path_enable();
+        run_fm_analog_dac_config();
     } else if (fromFm && !toFm) {
         run_btfm_pin_switch(MODE_BTSCO);
     }
@@ -2512,7 +2556,10 @@ status_t AudioHardware::setFmVolume(float v)
     // The kernel has no SND_SET_FM_RADIO_VOLUME ioctl (it failed every time),
     // so use the normal SND_SET_VOLUME RPC on the device FM was routed to.
     // logToLinear() undoes the log curve AudioPolicyManagerBase applied; map
-    // 0-100% onto the 6 RPC levels (0-5).
+    // 0-100% onto the RPC levels 0-15, one level per volume key step. The stock
+    // V10c libaudio does the same: its FM volume keys log setFmVolume(n/15) ->
+    // rpc_snd_set_volume(dev, 0, n) for n = 0..15. FM has no software mixer, so
+    // this level is the only volume control.
     int volPct = 0;
 
     if (v > 0.0f) {
@@ -2525,9 +2572,11 @@ status_t AudioHardware::setFmVolume(float v)
             volPct = 100;
     }
 
-    int vol = volPct > 0 ? (volPct + 19) / 20 : 0;
-    if (vol > 5)
-        vol = 5;
+    int vol = (volPct * 15 + 50) / 100;
+    if (volPct > 0 && vol < 1)
+        vol = 1;
+    if (vol > 15)
+        vol = 15;
 
     LOGI("setFmVolume: linear=%d%% rpc=%d", volPct, vol);
     mFmVolume = vol;
