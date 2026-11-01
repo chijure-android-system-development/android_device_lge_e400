@@ -202,6 +202,17 @@ public class LGEQualcommUiccRIL extends QualcommNoSimReadyRIL implements Command
         IccCardApplication application = null;
         if (appIndex >= 0 && appIndex < numApplications) {
             application = status.getApplication(appIndex);
+        } else if (numApplications > 0) {
+            // The IccHandler of QualcommNoSimReadyRIL calls getApplication(appIndex)
+            // without checking it, and its thread dies on -1 (SIM being inserted:
+            // apps=1 but the subscription index is still -1). IccCard needs the
+            // indexes at -1 too, to report the card as absent instead of reading
+            // an application that is not in the list.
+            Log.w(LOG_TAG, "Subscription app index " + appIndex + " is invalid, treating the card as having no applications");
+            numApplications = 0;
+            status.setNumApplications(0);
+            status.setGsmUmtsSubscriptionAppIndex(-1);
+            status.setCdmaSubscriptionAppIndex(-1);
         }
         mAid = application != null ? application.aid : null;
         if (RILJ_LOGD) {
