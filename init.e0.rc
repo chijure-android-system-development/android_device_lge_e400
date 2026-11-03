@@ -173,21 +173,21 @@ on boot
     write /proc/sys/net/ipv6/conf/rmnet_sdio6/accept_ra 2
     write /proc/sys/net/ipv6/conf/rmnet_sdio7/accept_ra 2
     write /proc/sys/vm/vfs_cache_pressure 100
-    chown system system /sys/class/input/input1/range
-    chown system system /sys/class/input/input1/bandwidth
-    chown system system /sys/class/input/input1/mode
-    chown system system /sys/class/input/input1/value
-    chown system system /sys/class/input/input1/delay
-    chown system system /sys/class/input/input1/update
-    chown system system /sys/class/input/input1/selftest
-    chown system system /sys/class/input/input1/offset_filt_x
-    chown system system /sys/class/input/input1/offset_filt_y
-    chown system system /sys/class/input/input1/offset_filt_z
-    chown system system /sys/class/input/input1/fast_calibration_x
-    chown system system /sys/class/input/input1/fast_calibration_y
-    chown system system /sys/class/input/input1/fast_calibration_z
-    chown system system /sys/class/input/input1/eeprom_writing
-    chown system system /sys/class/input/input1/softreset
+    chown system system /sys/class/input/input2/range
+    chown system system /sys/class/input/input2/bandwidth
+    chown system system /sys/class/input/input2/mode
+    chown system system /sys/class/input/input2/value
+    chown system system /sys/class/input/input2/delay
+    chown system system /sys/class/input/input2/update
+    chown system system /sys/class/input/input2/selftest
+    chown system system /sys/class/input/input2/offset_filt_x
+    chown system system /sys/class/input/input2/offset_filt_y
+    chown system system /sys/class/input/input2/offset_filt_z
+    chown system system /sys/class/input/input2/fast_calibration_x
+    chown system system /sys/class/input/input2/fast_calibration_y
+    chown system system /sys/class/input/input2/fast_calibration_z
+    chown system system /sys/class/input/input2/eeprom_writing
+    chown system system /sys/class/input/input2/softreset
     chmod 0666 /sys/bus/i2c/drivers/proximity_gp2ap/3-0044/enable
     chmod 0666 /sys/bus/i2c/drivers/proximity_gp2ap/5-0044/enable
 
@@ -217,9 +217,13 @@ service rmt_storage /system/bin/rmt_storage /dev/block/mmcblk0p10 /dev/block/mmc
     user root
     disabled
 
-service sensord /system/bin/sensord
-   user system
-   group compass misc input
+# The Bosch daemon creates fifos in /data/local/tmp and writes the
+# attributes of the bma250 and bmm050 input devices, so it runs as root
+# like it does on the stock ROM. The sensors HAL, loaded by system_server,
+# opens those fifos, so the daemon must create them world accessible and
+# init starts services with umask 077.
+service sensord /system/bin/sh -c "umask 0; exec /system/bin/sensord"
+   user root
    class core
    oneshot
 ## LGE_CHANGE_E
