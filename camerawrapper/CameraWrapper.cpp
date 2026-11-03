@@ -29,6 +29,7 @@
 #include <cutils/log.h>
 
 #include <dlfcn.h>
+#include <string.h>
 #include <utils/threads.h>
 #include <utils/String8.h>
 #include <hardware/hardware.h>
@@ -133,6 +134,22 @@ static char * camera_fixup_getparams(int id, const char * settings)
     return ret;
 }
 
+/* The vendor HAL maps the gralloc preview buffers with the gralloc size
+ * (page aligned, e.g. 462848 for 640x480 NV21) and hands them to the video
+ * encoder as is, which then rejects them as "too small" (it expects exactly
+ * w*h*3/2 = 460800). Hand the HAL memory of the real frame size instead. */
+static camera_request_memory gFrameGetMemory;
+static size_t gFrameBytes;
+
+static camera_memory_t *frame_get_memory(int fd, size_t size, unsigned int num,
+        void *user)
+{
+    if (fd >= 0 && gFrameBytes && size > gFrameBytes &&
+            size - gFrameBytes < 4096)
+        size = gFrameBytes;
+    return gFrameGetMemory(fd, size, num, user);
+}
+
 char * camera_fixup_setparams(int id, const char * settings)
 {
     android::CameraParameters params;
@@ -141,6 +158,19 @@ char * camera_fixup_setparams(int id, const char * settings)
     /* never let the app enable HDR/AE bracketing: this sensor can't do it */
     params.set("ae-bracket-hdr", "Off");
     params.set("face-detection", "off");
+
+    /* This HAL records the preview frames, so the video must have the
+     * preview size (the app asks for a small preview but the HAL advertises
+     * 640x480 as video size, which CameraSource then uses to configure the
+     * software H.264 encoder: too big for its default level). */
+    const char *hint = params.get("recording-hint");
+    const char *psize = params.get("preview-size");
+    if (hint && !strcmp(hint, "true") && psize)
+        params.set("video-size", psize);
+
+    int pw = 0, ph = 0;
+    params.getPreviewSize(&pw, &ph);
+    gFrameBytes = pw > 0 && ph > 0 ? pw * ph * 3 / 2 : 0;
 
     android::String8 strParams = params.flatten();
     char *ret = strdup(strParams.string());
@@ -177,7 +207,8 @@ void camera_set_callbacks(struct camera_device * device,
     if(!device)
         return;
 
-    VENDOR_CALL(device, set_callbacks, notify_cb, data_cb, data_cb_timestamp, get_memory, user);
+    gFrameGetMemory = get_memory;
+    VENDOR_CALL(device, set_callbacks, notify_cb, data_cb, data_cb_timestamp, frame_get_memory, user);
 }
 
 void camera_enable_msg_type(struct camera_device * device, int32_t msg_type)
